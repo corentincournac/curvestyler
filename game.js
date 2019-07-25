@@ -484,7 +484,7 @@ class Worm {
 		{
 			var distanceRan = Math.sqrt(dx*dx + dy*dy);
 			
-			if (Math.random() <= holeChance && this.holeSize <= 0 && !this.wasHoling)
+			if (Math.random() <= holeChance * this.speedMultiplier && this.holeSize <= 0 && !this.wasHoling)
 			{
 				this.holeSize = Math.max(this.mySize * holeSizeFromWormSize * 2, wormSize * holeSizeFromWormSize * 2);
 				this.holeStartX = this.lastX;
