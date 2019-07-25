@@ -18,7 +18,7 @@ var holeChance = 0.007;	//0.005
 var holeSizeFromWormSize = 2.4;
 var holeCooldown = 0.2;	//Time (s) before a hole is active
 var styleCooldown = 0.05;	//Time before banking style points
-var bonusChance = 0.0025;	//0.0025
+var bonusChance = 0.025;	//0.0025
 var bonusRadius = 25;	//Radius of detection of the bonuses
 var bonusTimer = 8;	//Time(s) during which the bonuses apply
 var bonusSpecialTimers = [ {bonus:"Accelerate", value:6}, {bonus:"AccelerateOther", value:6}, {bonus:"Warp", value:12}, {bonus:"WarpAll", value:12}, {bonus:"Safe", value:6} ];	//Time(s) for certain specific bonuses
@@ -398,13 +398,13 @@ class Worm {
 		
 		if (this.canWarp > 0)
 		{
-			ctx.globalAlpha = (1+Math.cos(totalTimer * 10))/2;
+			if (Math.cos(totalTimer * 10) > 0)
+				ctx.fillStyle = "white";
 		}
 		
 		ctx.beginPath();
 		ctx.arc(this.x, this.y, this.mySize, 0, 2*Math.PI, false);
 		ctx.fill();
-		ctx.globalAlpha = 1;
 	}
 	
 	stir(deltaDirection)
