@@ -242,6 +242,7 @@ class AppliedBonus
 				}
 				ctx2.fillStyle = "black";
 				ctx2.fillRect(0,0,size,size);
+				Holes = [];
 			break;
 			case "Warp":
 				this.ApplyToWormOfColor(this.colorOfTaker, function(worm) { worm.canWarp++; });
