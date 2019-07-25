@@ -15,10 +15,10 @@ var headColor = "yellow";
 var baseSpeed = 90;	// pixels/s
 var steerForce = 130;	// deg/s
 var holeChance = 0.007;	//0.005
-var holeSizeFromWormSize = 2.2;
+var holeSizeFromWormSize = 2.4;
 var holeCooldown = 0.2;	//Time (s) before a hole is active
 var styleCooldown = 0.05;	//Time before banking style points
-var bonusChance = 0.0025;	//0.001
+var bonusChance = 0.0025;	//0.0025
 var bonusRadius = 25;	//Radius of detection of the bonuses
 var bonusTimer = 8;	//Time(s) during which the bonuses apply
 var bonusSpecialTimers = [ {bonus:"Accelerate", value:6}, {bonus:"AccelerateOther", value:6}, {bonus:"Warp", value:12}, {bonus:"WarpAll", value:12}, {bonus:"Safe", value:6} ];	//Time(s) for certain specific bonuses
@@ -538,15 +538,15 @@ class Worm {
 			return false;
 		
 		var balaiAngle = 90;
-		var balaiDelta = 30;
+		var balaiDelta = 15;
 		
 		if (this.speedMultiplier < 1)
 			balaiAngle = 60;
 		
 		for (var angle = -balaiAngle; angle <= balaiAngle; angle += balaiDelta)
 		{
-			var checkx = (this.x + Math.cos((this.direction + angle) / 180 * Math.PI));
-			var checky = (this.y - Math.sin((this.direction + angle) / 180 * Math.PI));
+			var checkx = (this.x + this.mySize * Math.cos((this.direction + angle) / 180 * Math.PI));
+			var checky = (this.y - this.mySize * Math.sin((this.direction + angle) / 180 * Math.PI));
 			
 			var pixelData = ctx2.getImageData(checkx, checky, 1, 1).data;
 			if (pixelData[0] != 0 || pixelData[1] != 0 || pixelData[2] != 0)
@@ -939,7 +939,19 @@ function draw() {
 		var winr = GetWinner();
 		ctx.fillStyle = Joueurs[winr].myColor;
 		ctx.font = "100px Arial";
-		ctx.fillText(Joueurs[winr].myName + " won the score", 100,400);
+		ctx.fillText(Joueurs[winr].myName + " won the Score", 100,400);
+		
+		var stylr = GetWinnerStyle();
+		if (stylr == -1)
+		{
+			ctx.fillStyle = "white";
+			ctx.fillText("Style Tie !", 100,540);
+		}
+		else
+		{
+			ctx.fillStyle = Joueurs[stylr].myColor;
+			ctx.fillText(Joueurs[stylr].myName + " won the Style", 100,540);
+		}
 	}
 }
 
@@ -1016,5 +1028,30 @@ function GetWinner()
 	}
 	
 	return -1;
+}
+
+function GetWinnerStyle()
+{
+	var tie = false;
+	var best = 0;
+	var bestplayerindex = 0;
+	for (var i = 0; i < Joueurs.length; i++)
+	{
+		if (Joueurs[i].myStyle > best)
+		{
+			bestplayerindex = i;
+			best = Joueurs[i].myStyle;
+			tie = false;
+		}
+		else if (Joueurs[i].myStyle == best)
+		{
+			tie = true;
+		}
+	}
+	
+	if (tie)
+		return -1;
+	else
+		return bestplayerindex;
 }
 		
