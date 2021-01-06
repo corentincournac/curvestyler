@@ -1,8 +1,10 @@
 
-var size;
+var sizeX;
+var sizeY;
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 ctx.font = "30px Arial";
+var squareCheck = document.getElementById("sqr");
 var lastRender = 0;
 var totalTimer = 0;
 
@@ -36,6 +38,8 @@ var Setup = "None";
 
 var ScoreToGet;
 var ScoreDiff = 2;
+
+var isSquared = true;
 
 window.addEventListener("keydown", resolveKeydownInput);
 window.addEventListener("keyup", resolveKeyupInput);
@@ -215,10 +219,10 @@ class AppliedBonus
 		switch (this.type)
 		{
 			case "Accelerate":
-				this.ApplyToWormOfColor(this.colorOfTaker, function(worm) { worm.speedMultiplier *= 2; });
+				this.ApplyToWormOfColor(this.colorOfTaker, function(worm) { worm.speedMultiplier *= 2; worm.stirMultiplier *= 1.5; });
 			break;
 			case "AccelerateOther":
-				this.ApplyToAllWormsButColor(this.colorOfTaker, function(worm) { worm.speedMultiplier *= 2; });
+				this.ApplyToAllWormsButColor(this.colorOfTaker, function(worm) { worm.speedMultiplier *= 2; worm.stirMultiplier *= 1.5; });
 			break;
 			case "Slow":
 				this.ApplyToWormOfColor(this.colorOfTaker, function(worm) { worm.speedMultiplier *= 0.5; });
@@ -240,8 +244,8 @@ class AppliedBonus
 				{
 					Joueurs[i].myStyle = Joueurs[i].myBankedStyle;
 				}
-				ctx2.fillStyle = "black";
-				ctx2.fillRect(0,0,size,size);
+				ctx2.fillStyle = "#222222";
+				ctx2.fillRect(0,0,sizeX+10,sizeY+10);
 				Holes = [];
 			break;
 			case "Warp":
@@ -263,10 +267,10 @@ class AppliedBonus
 		switch (this.type)
 		{
 			case "Accelerate":
-				this.ApplyToWormOfColor(this.colorOfTaker, function(worm) { worm.speedMultiplier *= 0.5; });
+				this.ApplyToWormOfColor(this.colorOfTaker, function(worm) { worm.speedMultiplier *= 0.5; worm.stirMultiplier /= 1.5;});
 			break;
 			case "AccelerateOther":
-				this.ApplyToAllWormsButColor(this.colorOfTaker, function(worm) { worm.speedMultiplier *= 0.5; });
+				this.ApplyToAllWormsButColor(this.colorOfTaker, function(worm) { worm.speedMultiplier *= 0.5; worm.stirMultiplier /= 1.5;});
 			break;
 			case "Slow":
 				this.ApplyToWormOfColor(this.colorOfTaker, function(worm) { worm.speedMultiplier *= 2; });
@@ -447,24 +451,24 @@ class Worm {
 		
 		if (this.canWarp > 0)
 		{
-			if (this.x < 0)
+			if (this.x < 1)
 			{
-				this.x += size;
+				this.x += sizeX-2;
 				hasWarped = true;
 			}
-			if (this.x > size)
+			if (this.x > sizeX-1)
 			{
-				this.x -= size;
+				this.x -= sizeX-2;
 				hasWarped = true;
 			}
-			if (this.y < 0)
+			if (this.y < 1)
 			{
-				this.y += size;
+				this.y += sizeY - 2;
 				hasWarped = true;
 			}
-			if (this.y > size)
+			if (this.y > sizeY - 1)
 			{
-				this.y -= size;
+				this.y -= sizeY - 2;
 				hasWarped = true;
 			}
 			
@@ -529,10 +533,12 @@ class Worm {
 		if (this.isDead)
 			return true;
 		
-		if (this.x < 0 || this.x > size || this.y < 0 || this.y > size)
+		if (this.x < 0 || this.x > sizeX || this.y < 0 || this.y > sizeY)
 		{
 			if (this.canWarp == 0)
+			{
 				return true;
+			}
 		}
 		
 		if (this.isSafe > 0)
@@ -549,15 +555,18 @@ class Worm {
 			var checkx = (this.x + this.mySize * Math.cos((this.direction + angle) / 180 * Math.PI));
 			var checky = (this.y - this.mySize * Math.sin((this.direction + angle) / 180 * Math.PI));
 			
+			if (checkx < 0 || checkx > sizeX || checky < 0 || checky > sizeY)
+				continue;
+
 			var pixelData = ctx2.getImageData(checkx, checky, 1, 1).data;
-			if (pixelData[0] != 0 || pixelData[1] != 0 || pixelData[2] != 0)
+			if (pixelData[0] != 34 || pixelData[1] != 34 || pixelData[2] != 34)
 			{
 				if (!this.shouldDrawLine) //SALVATION
 				{
+
 					this.isSalvation = true;
 					return false;
 				}
-					
 				return true;
 			}
 		}
@@ -584,39 +593,60 @@ class Worm {
 	}
 }
 
+///-------------------------------------------------------------------------------------------
+///------------Logic starts here--------------------------------------------------------------
+///-------------------------------------------------------------------------------------------
+
 start();
 
 function start()
 {
 	canvas.width = screen.width - 100;
 	canvas.height = screen.height - 100;
-	size = canvas.height;
 	
 	canvas2 = document.createElement('canvas');
-	canvas2.width = size;
-	canvas2.height = size;
+	
+	resizeScreen();
 	
 	ctx2 = canvas2.getContext('2d');
 	ctx2.imageSmoothingEnabled = false;
-	
-	ctx.fillStyle = "black";
 	
 	Joueurs = [ new Joueur("Rouj","red"), new Joueur("Ver","lime"), new Joueur("Ble","blue"), new Joueur("Sian","cyan"),new Joueur("Roz","pink"), new Joueur("Violai","purple"), new Joueur("Blan","white"), new Joueur("Magente","magenta") ];
 	
 	loop(0);
 }
 
+function resizeScreen()
+{
+	isSquared = squareCheck.checked;
+	sizeY = canvas.height;
+	if (isSquared)
+	{
+		sizeX = canvas.height;
+	}
+	else
+	{
+		sizeX = canvas.width;
+	}
+	
+	canvas2.width = sizeX;
+	canvas2.height = sizeY;
+}
+
 function init()
 {
-	ctx2.fillStyle = "black";
-	ctx2.fillRect(0,0,size,size);
+	resizeScreen();
+	
+	ctx.fillStyle = "#333333";
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+	
+	ctx2.fillStyle = "#222222";
+	ctx2.fillRect(0,0,sizeX+10,sizeY+10);
 	
 	myWorms = [];
 	Holes = [];
 	Bonuses = [];
 	AppliedBonuses = [];
-	
-	//Bonuses.push(new Bonus(size/2, size/2, "Safe"));
 	
 	ScoreToGet = -10;
 	
@@ -626,7 +656,7 @@ function init()
 		{
 			Joueurs[i].myBankedStyle = Joueurs[i].myStyle;
 			ScoreToGet += 10;
-			var worm = new Worm(Math.random()*(size - 200) + 100, Math.random()*(size - 200) + 100, Math.random()*360, Joueurs[i].myColor);
+			var worm = new Worm(Math.random()*(sizeX - 200) + 100, Math.random()*(sizeY - 200) + 100, Math.random()*360, Joueurs[i].myColor);
 			worm.configInputs(Joueurs[i].myLeftInput, Joueurs[i].myRightInput);
 			worm.drawLine();
 			myWorms.push(worm);
@@ -784,8 +814,8 @@ function update(dt) {
 			var randomBonusVal = Math.floor(11 * Math.random());
 			var randomBonus = BonusLoader[randomBonusVal].bonus;
 			
-			var bonusx = size * Math.random();
-			var bonusy = size * Math.random();
+			var bonusx = sizeX * Math.random();
+			var bonusy = sizeY * Math.random();
 			
 			Bonuses.push(new Bonus(bonusx, bonusy, randomBonus));
 		}
@@ -837,7 +867,7 @@ function update(dt) {
 function draw() {
 	
 	ctx.fillStyle = "#333333";
-	ctx.fillRect(0,0,canvas.width, canvas.height);
+	ctx.fillRect(0,0,canvas.width+10, canvas.height+10);
 	
 	if (GameState == "Playing")
 	{
@@ -857,8 +887,8 @@ function draw() {
 	
 	if (GameState == "Init")
 	{
-		ctx.fillStyle = "black";
-		ctx.fillRect(0,0,size,size);
+		ctx.fillStyle = "#222222";
+		ctx.fillRect(0,0,sizeX+10,sizeY+10);
 		
 		for (var i = 0; i < Joueurs.length; i++)
 		{
@@ -887,7 +917,7 @@ function draw() {
 		
 		ctx.fillStyle = "white";
 		ctx.fillText("Click on a name to setup keys", 10, 70);
-		ctx.fillText("[Space] to start", size-440, size-30);
+		ctx.fillText("[Space] to start", sizeX-440, sizeY-30);
 	}
 		
 	if (GameState == "Playing" || GameState == "Pause" || GameState == "PreStart" || GameState == "PostGame")
@@ -909,28 +939,31 @@ function draw() {
 	
 	if (GameState != "Init")
 	{
-		ctx.font = "50px Arial";
-		
-		ctx.fillStyle = "black";
-		ctx.fillRect(size+40, 100, 650, 70);
-		ctx.fillStyle = "white";
-		ctx.fillText("Score", size+350, 150);
-		ctx.fillText("Style", size+550, 150);
-		ctx.fillText("-> " + ScoreToGet + " ("+ScoreDiff+")", size+60, 150);
-		
-		var pos = 0;
-		for (var i = 0; i < Joueurs.length; ++i)
+		if(GameState == "EndGame" || GameState == "PostGame" || isSquared)
 		{
-			if (Joueurs[i].myIsPlaying)
+			ctx.font = "50px Arial";
+		
+			ctx.fillStyle = "#222222";
+			ctx.fillRect(sizeY+40, 100, 650, 70);
+			ctx.fillStyle = "white";
+			ctx.fillText("Score", sizeY+350, 150);
+			ctx.fillText("Style", sizeY+550, 150);
+			ctx.fillText("-> " + ScoreToGet + " ("+ScoreDiff+")", sizeY+60, 150);
+			
+			var pos = 0;
+			for (var i = 0; i < Joueurs.length; ++i)
 			{
-				ctx.fillStyle = "black";
-				ctx.fillRect(size+40, 170+pos*70, 650, 70);
-				ctx.fillStyle = Joueurs[i].myColor;
-				ctx.fillText(Joueurs[i].myName, size+60, 220+pos*70);
-				ctx.fillText(Joueurs[i].myScore, size+350, 220+pos*70);
-				ctx.fillText(Joueurs[i].myStyle, size+550, 220+pos*70);
-				
-				pos++;
+				if (Joueurs[i].myIsPlaying)
+				{
+					ctx.fillStyle = "#222222";
+					ctx.fillRect(sizeY+40, 170+pos*70, 650, 70);
+					ctx.fillStyle = Joueurs[i].myColor;
+					ctx.fillText(Joueurs[i].myName, sizeY+60, 220+pos*70);
+					ctx.fillText(Joueurs[i].myScore, sizeY+350, 220+pos*70);
+					ctx.fillText(Joueurs[i].myStyle, sizeY+550, 220+pos*70);
+					
+					pos++;
+				}
 			}
 		}
 	}

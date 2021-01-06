@@ -18,9 +18,9 @@ Game ends when a player gets the Score corresponding to the number written next 
 
 Winner of the Score gets +1 global point, winner of the Style gets +1 global point.
 
+Check the "Retro Mode" checkbox to play on a squared board.
 
-
-When the game looks bugged, just F5.
+When the game looks bugged, just F5 ;)
 
 Have fun !
 
