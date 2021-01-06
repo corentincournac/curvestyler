@@ -1,6 +1,8 @@
 # Curve Styler
 
-Curve Styler aka the best game ever is a clone of Curve Fever, where style counts !
+Check out the game! -> https://corentincournac.github.io/curvestyler/
+
+Curve Styler aka the best game ever is a clone of Curve Fever, where style counts!
 
 You have the Score, which are regular points (you get +1 if another worm dies), and the Style.
 
