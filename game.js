@@ -939,12 +939,12 @@ function draw() {
 			
 			ctx.fillText(Joueurs[i].myName, 100, 160+100*i);
 			if (Setup == "Left" && JoueurToSetup == i)
-				ctx.fillText("<>", 600, 160+100*i);
+				ctx.fillText("<Left>", 600, 160+100*i);
 			else
 				ctx.fillText(Joueurs[i].myLeftInput, 600, 160+100*i);
 			
 			if (Setup == "Right" && JoueurToSetup == i)
-				ctx.fillText("<>", 800, 160+100*i);
+				ctx.fillText("<Right>", 800, 160+100*i);
 			else
 				ctx.fillText(Joueurs[i].myRightInput, 800, 160+100*i);
 		}
