@@ -123,6 +123,7 @@ class Joueur
 		this.myColor = color;
 		this.myScore = 0;
 		this.myStyle = 0;
+		this.myTotalScore = 0;
 		this.myBankedStyle = 0;
 		this.myIsPlaying = false;
 		this.myLeftInput = "";
@@ -685,8 +686,22 @@ function resolveKeydownInput(event)
 		}
 		else if (GameState == "Init" && Setup == "None")
 		{
-			GameState = "PreStart";
-			init();
+			//check if at least 1 player is playing
+			var anyPlayer = false;
+			for (var i = 0; i < Joueurs.length; i++)
+			{
+				if (Joueurs[i].myIsPlaying)
+				{
+					anyPlayer = true;
+					break;
+				}
+			}
+			
+			if (anyPlayer)
+			{
+				GameState = "PreStart";
+				init();
+			}
 		}
 		else if (GameState == "PostGame")
 		{
@@ -859,7 +874,28 @@ function update(dt) {
 			var winr = GetWinner();
 			
 			if (winr != -1)
+			{
 				GameState = "EndGame";
+				
+				//add total score
+				Joueurs[winr].myTotalScore += 1;
+				var stylr = GetWinnerStyle();
+				
+				if (stylr.index == -1)	//tie : find and add 1 to all tied players
+				{
+					for (var i = 0; i < Joueurs.length; i++)
+					{
+						if (Joueurs[i].myIsPlaying && Joueurs[i].myStyle == stylr.score)
+						{
+							Joueurs[i].myTotalScore += 1;
+						}
+					}
+				}
+				else
+				{
+					Joueurs[stylr.index].myTotalScore += 1;
+				}
+			}
 		}
 	}
 }
@@ -944,10 +980,11 @@ function draw() {
 			ctx.font = "50px Arial";
 		
 			ctx.fillStyle = "#222222";
-			ctx.fillRect(sizeY+40, 100, 650, 70);
+			ctx.fillRect(sizeY+40, 100, 850, 70);
 			ctx.fillStyle = "white";
 			ctx.fillText("Score", sizeY+350, 150);
 			ctx.fillText("Style", sizeY+550, 150);
+			ctx.fillText("Final", sizeY+700, 150);
 			ctx.fillText("-> " + ScoreToGet + " ("+ScoreDiff+")", sizeY+60, 150);
 			
 			var pos = 0;
@@ -956,12 +993,12 @@ function draw() {
 				if (Joueurs[i].myIsPlaying)
 				{
 					ctx.fillStyle = "#222222";
-					ctx.fillRect(sizeY+40, 170+pos*70, 650, 70);
+					ctx.fillRect(sizeY+40, 170+pos*70, 800, 70);
 					ctx.fillStyle = Joueurs[i].myColor;
 					ctx.fillText(Joueurs[i].myName, sizeY+60, 220+pos*70);
 					ctx.fillText(Joueurs[i].myScore, sizeY+350, 220+pos*70);
 					ctx.fillText(Joueurs[i].myStyle, sizeY+550, 220+pos*70);
-					
+					ctx.fillText(Joueurs[i].myTotalScore, sizeY+750, 220+pos*70);
 					pos++;
 				}
 			}
@@ -976,15 +1013,15 @@ function draw() {
 		ctx.fillText(Joueurs[winr].myName + " won the Score", 100,400);
 		
 		var stylr = GetWinnerStyle();
-		if (stylr == -1)
+		if (stylr.index == -1)
 		{
 			ctx.fillStyle = "white";
 			ctx.fillText("Style Tie !", 100,540);
 		}
 		else
 		{
-			ctx.fillStyle = Joueurs[stylr].myColor;
-			ctx.fillText(Joueurs[stylr].myName + " won the Style", 100,540);
+			ctx.fillStyle = Joueurs[stylr.index].myColor;
+			ctx.fillText(Joueurs[stylr.index].myName + " won the Style", 100,540);
 		}
 	}
 }
@@ -1083,9 +1120,14 @@ function GetWinnerStyle()
 		}
 	}
 	
+	var index;
+	var score = best;
+	
 	if (tie)
-		return -1;
+		index = -1;
 	else
-		return bestplayerindex;
+		index = bestplayerindex;
+	
+	return {index, score};
 }
 		
