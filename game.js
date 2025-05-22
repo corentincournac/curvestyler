@@ -548,8 +548,8 @@ class Worm {
 		var balaiAngle = 60;
 		var balaiDelta = 15;
 		
-		if (this.speedMultiplier < 1)
-			balaiAngle = 55;
+		if (this.speedMultiplier < 1 || this.stirMultiplier > 1)
+			balaiAngle = 50;
 		
 		for (var angle = -balaiAngle; angle <= balaiAngle; angle += balaiDelta)
 		{
